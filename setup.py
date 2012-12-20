@@ -12,6 +12,6 @@ setup(name='pyphctool',
       py_modules = ['pyphctoolcore'],
       scripts = ['pyphctool'],
       data_files = [('/etc/phc', ['vids.conf']),
-                    ('/usr/lib/systemd/system', ['phctool-setvids.service'])]
+                    ('/usr/lib/systemd/system', ['pyphctool-setvids.service'])]
      )
 
