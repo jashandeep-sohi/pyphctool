@@ -11,6 +11,7 @@ setup(name='pyphctool',
       license='gplv3',
       py_modules = ['pyphctoolcore'],
       scripts = ['pyphctool'],
-      data_files = [('/etc/phc', ['vids.conf'])]
+      data_files = [('/etc/phc', ['vids.conf']),
+                    ('/usr/lib/systemd/system', ['phctool-setvids.service'])]
      )
 

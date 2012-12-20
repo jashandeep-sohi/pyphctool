@@ -103,7 +103,7 @@ def setvids(confFileLoc):
  #Load VIDs
  try:
   with open(confFileLoc, 'r') as confFile: vids = list(map(int, confFile.readline().split()))
-  if len(vids) != len(cpus[0].getDefaultVids()): raise
+  if len(vids) != len(cpus[0].getDefaultVids()): raise Exception('VIDs in the configuration file are not the correct size.')
  except: raise Exception('Could not load vids. Check the configuration file.')
  
  #Set VIDs
@@ -133,7 +133,7 @@ class Cpu(object):
   if len(self.getDefaultVids()) != len(vids): raise Exception('VIDS are not the correct length for', self.name)
   try:
    with open(self.path+'/cpufreq/phc_vids', 'w') as f: return f.write( ' '.join(map(str,vids)) )
-  except: raise Exception('Could not set the PHC vids', vids,' for', self.name)
+  except: raise Exception('Could not set the PHC vids', vids,'for', self.name)
   		
  def getAvailableGovs(self):
   try:
