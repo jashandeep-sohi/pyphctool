@@ -1,0 +1,22 @@
+#!/usr/bin/python3
+import sys
+import pyphctoolcore as pc
+
+def main():
+ try: task = sys.argv[1]
+ except: task = None
+
+ if task == '-setvids':
+  try: confFileLoc = sys.argv[2]
+  except: confFileLoc = None
+  pc.setvids(confFileLoc)
+  
+ elif task == '-findvids':
+  try: cpuType = sys.argv[2]
+  except: cpuType = 'intel'
+  pc.findvids(cpuType)
+  
+ else: print('Task not supported')
+
+if __name__ == '__main__': main()
+
