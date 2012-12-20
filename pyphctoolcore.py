@@ -73,7 +73,7 @@ def findvids(cpuType):
       
      if cpuType == 'amd':
       newVids[n] = newVids[n] + 1
-      if newVids[n] > 200: break
+      if newVids[n] > 127: break
      else:
       newVids[n] = newVids[n] - 1
       if newVids[n] < 0: break
