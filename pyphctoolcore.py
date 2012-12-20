@@ -21,6 +21,11 @@ def findvids(cpuType):
  #Save settings for each CPU, so that we can restore it later.
  preSettings = [(cpu.getCurrentVids(), cpu.getCurrentFreq(), cpu.getCurrentGov(), cpu.getMinMaxFreq()) for cpu in cpus]
  
+ #Make sure we can change to any freq
+ for cpu in cpus:
+  cpu.setCurrentGov('userspace')
+  cpu.setMinMaxFreq(availFreqs[-1], availFreqs[0])
+ 
  #Load previously tested freqs, if any.
  try: 
   with open('./passedvids.temp', 'r') as f: testedfreqs = [int(freqvid.split(':')[0]) for freqvid in f.read().split()]
@@ -34,11 +39,8 @@ def findvids(cpuType):
    print('Testing frequency:', freq)
    print('Current VIDs:', currentVids)
    
-   #Put each CPU in the correct state.
-   for cpu in cpus:
-    cpu.setCurrentGov('userspace')
-    cpu.setMinMaxFreq(availFreqs[-1], availFreqs[0])
-    cpu.setCurrentFreq(freq)
+   #Put each CPU in the correct freq.
+   for cpu in cpus: cpu.setCurrentFreq(freq)
    
    #Read previously found freq:vid pairs, if any
    try:
