@@ -1,10 +1,48 @@
 # vim: filetype=python3 tabstop=2 expandtab
 
+"""
+Find, set PHC VIDs for under volting CPUs.
+"""
+
+__version__ = "0.1"
+
 import os
 import glob
 import time
+import argparse
 import multiprocessing as mp
 import subprocess as sp
+
+arg_parser = argparse.ArgumentParser(
+  description = __doc__
+)
+
+sub_parsers = arg_parser.add_subparsers(
+  dest = "subcommand",
+  metavar = "SUBCOMMAND"
+)
+sub_parsers.required = True
+
+findvids_parser = sub_parsers.add_parser(
+  "findvids",
+  help = "Find safe VIDs by stressing CPU until system crash."
+)
+
+setvids_parser = sub_parsers.add_parser(
+  "setvids",
+  help = "Set VIDs found in config file."
+)
+
+findvids_parser.add_argument(
+  "cpu-type",
+  help = "CPU type.",
+  choices = ["intel", "amd"],
+)
+
+setvids_parser.add_argument(
+  "conf-file",
+  help = "Config file from where to read the VIDs from.",
+)
 
 def loadModule(m):
   """
@@ -96,42 +134,42 @@ def findvids(cpuType):
       except:
         prevFoundVids = str()
    
-    #Start stressing
-    nStressors = len(cpus) * 10
-    stressorPool = mp.Pool(processes=nStressors)
-    stressorPool.map_async(stressor, range(nStressors))
-   
-    try:
-      newVids = currentVids[:]
-      while True:
-        print("\nStressing with VIDs:",newVids)  
+      #Start stressing
+      nStressors = len(cpus) * 10
+      stressorPool = mp.Pool(processes=nStressors)
+      stressorPool.map_async(stressor, range(nStressors))
+     
+      try:
+        newVids = currentVids[:]
+        while True:
+          print("\nStressing with VIDs:",newVids)  
 
-        #Change vids
-        for cpu in cpus:
-          cpu.setCurrentVids(newVids)
+          #Change vids
+          for cpu in cpus:
+            cpu.setCurrentVids(newVids)
 
-        for j in reversed(range(1,31)):
-          print("\rWait "+str(j)+" seconds...", end="")
-          time.sleep(1)
+          for j in reversed(range(1,31)):
+            print("\rWait "+str(j)+" seconds...", end="")
+            time.sleep(1)
 
-        #Passed stress, so write new vids
-        with open("./passedvids.temp", "w") as fw:
-          fw.write(prevFoundVids)
-          fw.write(str(freq)+":"+str(newVids[n])+"\n") 
+          #Passed stress, so write new vids
+          with open("./passedvids.temp", "w") as fw:
+            fw.write(prevFoundVids)
+            fw.write(str(freq)+":"+str(newVids[n])+"\n") 
 
-        if cpuType == "amd":
-          newVids[n] = newVids[n] + 1
-        if newVids[n] > 127:
-          break
-        else:
-          newVids[n] = newVids[n] - 1
-          if newVids[n] < 0:
-            break
-    except KeyboardInterrupt:
-      continue
-    finally:
-      stressorPool.terminate()
-      testedfreqs.append(freq) 
+          if cpuType == "amd":
+            newVids[n] = newVids[n] + 1
+            if newVids[n] > 127:
+              break
+          else:
+            newVids[n] = newVids[n] - 1
+            if newVids[n] < 0:
+              break
+      except KeyboardInterrupt:
+        continue
+      finally:
+        stressorPool.terminate()
+        testedfreqs.append(freq)
   finally:
     #Restore Everything
     for cpu, preSetting in zip(cpus, preSettings):
@@ -139,7 +177,7 @@ def findvids(cpuType):
       cpu.setMinMaxFreq(preSetting[3][0], preSetting[3][1])
       cpu.setCurrentFreq(preSetting[1])
       cpu.setCurrentGov(preSetting[2])
-    print("\n\nCheck file "passedvids.temp" for safe VIDS.")
+    print("\n\nCheck file 'passedvids.temp' for safe VIDS.")
     print("Keep in mind that these VIDS are one away from a system crash,")
     print("so for peace of mind adjust these depending on how much of a")
     print("risk taker you are.")
@@ -157,8 +195,10 @@ def setvids(confFileLoc):
   try:
     with open(confFileLoc, "r") as confFile:
       vids = list(map(int, confFile.readline().split()))
-  if len(vids) != len(cpus[0].getDefaultVids()):
-    raise Exception("VIDs in the configuration file are not the correct size.")
+    if len(vids) != len(cpus[0].getDefaultVids()):
+      raise Exception(
+        "VIDs in the configuration file are not the correct size."
+      )
   except:
     raise Exception("Could not load vids. Check the configuration file.")
 
@@ -284,4 +324,11 @@ class Cpu(object):
 	
   def setMinMaxFreq(self, mi, ma):
     return tuple( reversed( (self.setMaxFreq(ma), self.setMinFreq(mi)) ) )
+    
+if __name__ == "__main__":
+  args = arg_parser.parse_args()
+  if args.subcommand == "findvids":
+    findvids(args.cpu_type)
+  elif args.sumcommand == "setvids":
+    setvids(args.conf_file)
 

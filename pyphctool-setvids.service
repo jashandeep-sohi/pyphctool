@@ -8,7 +8,7 @@ After=basic.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/pyphctool -setvids
+ExecStart=/usr/bin/pyphctool.py setvids /etc/phc/vids.conf
 RemainAfterExit=yes
 
 [Install]
