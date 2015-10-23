@@ -20,7 +20,7 @@
 Find, set PHC VIDs for under volting CPUs.
 """
 
-__version__ = "0.1"
+__version__ = "0.3.0"
 
 import os
 import glob
